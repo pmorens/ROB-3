@@ -103,7 +103,7 @@ void setup()
   /* INIT ENCODER */
   /* Pos */
   ENCODER_Init();
-  /* Speed */
+  /* Speedeegi */
   ENCODER_StartSpeedCalculation(ENCODER_SPEED_CALCULATION_SAMPLING_PERIOD);
 
   /* INIT MOTOR  */
