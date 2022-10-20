@@ -78,6 +78,16 @@ float u;
 float x;
 float Rm; 
 float Km;
+float kv1;
+float kv2;
+float kv3;
+float tv;
+float u_;
+float V_;
+float theta_0;
+float Bv1;
+float Bv2;
+float Bv3;
 /* END USER vars definition */
 
 void setup() 
@@ -98,6 +108,13 @@ void setup()
   Rm=16; 
   Km=0.0235;
   u=0;
+  kv1=0.1;/*Pared rígida*/
+  kv2=0.01;/*Pared media*/
+  kv3=0.001; /*Pared suave*/
+  theta_0=0;
+  Bv1=0.0002;/*Factor viscosidad alto*/
+  Bv2=0.0001; /*Factor viscosidad medio*/
+  Bv3=0.00005; /*Factor viscosidad bajo*/
   /* End INIT USER vars */
 
   /* INIT ENCODER */
@@ -129,15 +146,54 @@ fPos = (float) ENCODER_GetCount();
 
   torque= m*g*lc*sin(2*M_PI/360*pos_real);
   u=r*torque;
-  V=Rm/Km*u;
+  V=Rm/Km*u; 
+  /* APARTADO 1 y 2a
   
- /* if ( uControllerCounter < 200 )
-    MOTOR_SetVoltage(4);
-      
-  else if ( uControllerCounter < 400 )
-    MOTOR_SetVoltage(-4);*/
+ V=Rm/Km*u; 
+  tv=r*kv3*(pos_real - theta_0);
+  u_=r*torque-tv;
+ V_=u_*Rm/Km;  
   
-    MOTOR_SetVoltage(-V);
+if ( pos_real >= 60 )
+    MOTOR_SetVoltage(V_);
+    else if (pos_real < 60)
+MOTOR_SetVoltage(-V);Apartado 1 y 2a)*/
+
+  /*Apartado 2b)
+
+  if ( pos_real >= 60 ){
+    tv=r*(kv1*(pos_real - theta_0) +Bv2*speed_real );
+    u_=r*torque-tv;
+    V_=u_*Rm/Km;
+    MOTOR_SetVoltage(V_);
+  }
+    else if (pos_real < 60){
+      tv=r*Bv2*speed_real;
+      u_=r*torque-tv;
+      V_=u_*Rm/Km;
+      MOTOR_SetVoltage(V_);
+    }
+*/
+
+
+  if (pos_real < 60){
+      tv=r*Bv2*speed_real;
+      u_=r*torque-tv;
+      V_=u_*Rm/Km;
+      MOTOR_SetVoltage(V_);
+    }
+   else if (pos_real > 60){
+      MOTOR_SetVoltage(-V);
+    }
+  else if ( pos_real > 55 && pos_real < 65 ){
+    tv=r*kv1*(pos_real - theta_0);
+    u_=r*torque-tv;
+    V_=u_*Rm/Km;
+    MOTOR_SetVoltage(V_);
+  }
+    
+
+
 
   uControllerCounter++;
   /* END CODE TO BE IMPLEMENTED BY THE STUDENTS */
@@ -160,6 +216,8 @@ void COMMUNICATION_ROB ( void )
   Serial.println(speed_real,5);
   Serial.print(" V: ");
   Serial.println(V);
+  Serial.print(" V_: ");
+  Serial.println(V_);
  /* if (uControllerCounter > 450)
    COMMUNICATION_Stop();
   */
