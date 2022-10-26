@@ -88,6 +88,10 @@ float theta_0;
 float Bv1;
 float Bv2;
 float Bv3;
+float tv2;
+float V_2;
+float u_2;
+float kv_;
 /* END USER vars definition */
 
 void setup() 
@@ -112,9 +116,11 @@ void setup()
   kv2=0.01;/*Pared media*/
   kv3=0.001; /*Pared suave*/
   theta_0=0;
-  Bv1=0.0002;/*Factor viscosidad alto*/
-  Bv2=0.0001; /*Factor viscosidad medio*/
-  Bv3=0.00005; /*Factor viscosidad bajo*/
+  Bv1=0.0005;/*Factor viscosidad alto*/
+  Bv2=0.0002; /*Factor viscosidad medio*/
+  Bv3=0.0001;
+  kv_=0.0005;
+  /*Factor viscosidad bajo*/
   /* End INIT USER vars */
 
   /* INIT ENCODER */
@@ -147,22 +153,26 @@ fPos = (float) ENCODER_GetCount();
   torque= m*g*lc*sin(2*M_PI/360*pos_real);
   u=r*torque;
   V=Rm/Km*u; 
-  /* APARTADO 1 y 2a
+/*APARTADO 1
   
  V=Rm/Km*u; 
   tv=r*kv3*(pos_real - theta_0);
   u_=r*torque-tv;
  V_=u_*Rm/Km;  
+ */
+/*MOTOR_SetVoltage(-V); Apartado 1a)*/
+
+/* Apartado 2a 
   
 if ( pos_real >= 60 )
     MOTOR_SetVoltage(V_);
     else if (pos_real < 60)
-MOTOR_SetVoltage(-V);Apartado 1 y 2a)*/
+MOTOR_SetVoltage(-V);*/
 
-  /*Apartado 2b)
+ /* Apartado 2b)
 
   if ( pos_real >= 60 ){
-    tv=r*(kv1*(pos_real - theta_0) +Bv2*speed_real );
+    tv=r*(kv3*(pos_real - theta_0) +Bv2*speed_real );
     u_=r*torque-tv;
     V_=u_*Rm/Km;
     MOTOR_SetVoltage(V_);
@@ -175,23 +185,35 @@ MOTOR_SetVoltage(-V);Apartado 1 y 2a)*/
     }
 */
 
-
-  if (pos_real < 60){
+/*Apartado 2c)*/
+ if (pos_real < 50){
       tv=r*Bv2*speed_real;
       u_=r*torque-tv;
       V_=u_*Rm/Km;
       MOTOR_SetVoltage(V_);
     }
-   else if (pos_real > 60){
+   else if (pos_real > 70){
+/*      tv=r*kv_*(pos_real - theta_0);
+      u_=r*torque-tv;
+      V_=u_*Rm/Km;
+      if (speed_real >= -0.01 && speed_real <= 0.01) 
       MOTOR_SetVoltage(-V);
+      else*/
+        MOTOR_SetVoltage(-V);
     }
-  else if ( pos_real > 55 && pos_real < 65 ){
+  else if ( pos_real >= 50 && pos_real <= 70 ){
     tv=r*kv1*(pos_real - theta_0);
     u_=r*torque-tv;
-    V_=u_*Rm/Km;
+    V_=u_*Rm/Km; 
     MOTOR_SetVoltage(V_);
   }
-    
+/*  else if ( pos_real = 60){
+    tv2=r*kv1*(pos_real - theta_0);
+    u_2=r*torque-tv2;
+    V_2=u_2*Rm/Km;
+    MOTOR_SetVoltage(V_2);
+  }*/
+   
 
 
 
@@ -218,6 +240,8 @@ void COMMUNICATION_ROB ( void )
   Serial.println(V);
   Serial.print(" V_: ");
   Serial.println(V_);
+  Serial.print(" V_2: ");
+  Serial.println(V_2);
  /* if (uControllerCounter > 450)
    COMMUNICATION_Stop();
   */
